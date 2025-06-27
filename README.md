@@ -52,8 +52,8 @@ Internet → Internet Gateway → Public Subnet (ALB) → Private Subnet (ECS Ta
 - [ ] Configure VPC endpoints
 
 **Phase 3: Application & Pipeline**
-- [ ] Create sample API application
-- [ ] Build Docker container
+- [x] Create sample API application
+- [x] Build Docker container
 - [ ] Set up ECR repository
 - [ ] Develop GitHub Actions workflow
 
