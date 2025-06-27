@@ -39,8 +39,8 @@ Internet → Internet Gateway → Public Subnet (ALB) → Private Subnet (ECS Ta
 ## 📅 Timeline
 
 **Phase 1: Foundation Setup**
-- [ ] Create GitHub repository
-- [ ] Create dummy API with docker image
+- [x] Create GitHub repository
+- [x] Create dummy API with docker image
 - [ ] Set up basic project structure
 - [ ] Configure AWS OIDC Identity Provider
 - [ ] Create initial Terraform configuration (with backend store in S3)
