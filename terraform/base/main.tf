@@ -73,28 +73,92 @@ resource "aws_iam_policy" "github_actions" {
       {
         Effect = "Allow"
         Action = [
+          # Basic bucket operations
           "s3:CreateBucket",
           "s3:DeleteBucket",
+          "s3:ListBucket",
+
+          # Object operations
           "s3:GetObject",
           "s3:PutObject",
-          "s3:ListBucket",
-          "s3:GetBucketVersioning",
-          "s3:PutBucketVersioning",
-          "s3:GetBucketLocation",
-          "s3:GetBucketTagging",
-          "s3:PutBucketTagging",
-          "s3:GetBucketPolicy",
-          "s3:PutBucketPolicy",
+          "s3:GetObjectAcl",
+          "s3:GetObjectLegalHold",
+          "s3:GetObjectRetention",
+          "s3:GetObjectTagging",
+          "s3:GetObjectTorrent",
+          "s3:GetObjectVersion",
+          "s3:GetObjectVersionAcl",
+          "s3:GetObjectVersionTagging",
+          "s3:GetObjectVersionTorrent",
+          "s3:GetBucketObjectLockConfiguration",
+
+          # Bucket configuration
           "s3:GetBucketAcl",
           "s3:PutBucketAcl",
+          "s3:GetBucketAccelerateConfiguration",
+          "s3:GetBucketAnalyticsConfiguration",
           "s3:GetBucketCORS",
           "s3:PutBucketCORS",
+          "s3:GetBucketEncryption",
+          "s3:GetBucketIntelligentTieringConfiguration",
+          "s3:GetBucketInventoryConfiguration",
+          "s3:GetBucketLifecycleConfiguration",
+          "s3:GetBucketLocation",
+          "s3:GetBucketLogging",
+          "s3:GetBucketMetricsConfiguration",
+          "s3:GetBucketNotification",
+          "s3:GetBucketNotificationConfiguration",
+          "s3:GetBucketOwnershipControls",
+          "s3:GetBucketPolicy",
+          "s3:PutBucketPolicy",
+          "s3:GetBucketPolicyStatus",
+          "s3:GetBucketPublicAccessBlock",
+          "s3:GetBucketRequestPayment",
+          "s3:PutBucketRequestPayment",
+          "s3:GetBucketTagging",
+          "s3:PutBucketTagging",
+          "s3:GetBucketVersioning",
+          "s3:PutBucketVersioning",
           "s3:GetBucketWebsite",
           "s3:PutBucketWebsite",
+
+          # Legacy/Alternative configuration names
           "s3:GetAccelerateConfiguration",
           "s3:PutAccelerateConfiguration",
-          "s3:GetBucketRequestPayment",
-          "s3:PutBucketRequestPayment"
+          "s3:GetEncryptionConfiguration",
+          "s3:GetLifecycleConfiguration",
+          "s3:GetReplicationConfiguration",
+
+          # Account-level operations
+          "s3:GetAccountPublicAccessBlock",
+
+          # Access Point operations
+          "s3:GetAccessPoint",
+          "s3:GetAccessPointConfigurationForObjectLambda",
+          "s3:GetAccessPointForObjectLambda",
+          "s3:GetAccessPointPolicy",
+          "s3:GetAccessPointPolicyForObjectLambda",
+          "s3:GetAccessPointPolicyStatus",
+          "s3:GetAccessPointPolicyStatusForObjectLambda",
+
+          # Analytics and metrics
+          "s3:GetAnalyticsConfiguration",
+          "s3:GetInventoryConfiguration",
+          "s3:GetMetricsConfiguration",
+
+          # Multi-Region Access Point operations
+          "s3:GetMultiRegionAccessPoint",
+          "s3:GetMultiRegionAccessPointPolicy",
+          "s3:GetMultiRegionAccessPointPolicyStatus",
+          "s3:GetMultiRegionAccessPointRoutes",
+
+          # Storage Lens operations
+          "s3:GetStorageLensConfiguration",
+          "s3:GetStorageLensConfigurationTagging",
+          "s3:GetStorageLensDashboard",
+
+          # Job operations
+          "s3:GetJobTagging"
         ]
         Resource = [
           "arn:aws:s3:::hughze-poc-ecs",
