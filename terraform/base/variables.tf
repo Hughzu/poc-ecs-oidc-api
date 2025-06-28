@@ -27,3 +27,15 @@ variable "github_branches" {
   type        = list(string)
   default     = ["main", "develop"]
 }
+
+variable "alert_email" {
+  description = "Email address for budget alerts"
+  type        = string
+  default     = "hughesstiernon@gmail.com"
+}
+
+variable "monthly_budget_limit" {
+  description = "Monthly budget limit in USD"
+  type        = number
+  default     = 50
+}

@@ -26,3 +26,8 @@ output "github_secrets" {
     AWS_ROLE_ARN = aws_iam_role.github_actions.arn
   }
 }
+
+output "budget_name" {
+  description = "Name of the created budget"
+  value       = aws_budgets_budget.monthly_cost_budget.name
+}
