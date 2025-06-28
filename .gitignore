@@ -27,7 +27,6 @@ pip-delete-this-directory.txt
 *.tfplan
 *.tfplan.*
 .terraform/
-.terraform.lock.hcl
 terraform.tfvars
 terraform.tfvars.json
 *.auto.tfvars
