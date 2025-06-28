@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
     paths:
-      - 'terraform/**'
+      - 'terraform/app/**'
       - '.github/workflows/terraform-infrastructure.yml'
   workflow_dispatch:
     inputs:
@@ -28,7 +28,7 @@ jobs:
     
     defaults:
       run:
-        working-directory: terraform
+        working-directory: terraform/app
     
     steps:
       - name: Checkout code
@@ -125,7 +125,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: infrastructure-outputs-${{ github.run_number }}
-          path: terraform/infrastructure-outputs.json
+          path: terraform/app/infrastructure-outputs.json
           retention-days: 30
 
       - name: Update GitHub Secrets (if needed)
