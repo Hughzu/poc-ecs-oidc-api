@@ -41,9 +41,9 @@ Internet → Internet Gateway → Public Subnet (ALB) → Private Subnet (ECS Ta
 **Phase 1: Foundation Setup**
 - [x] Create GitHub repository
 - [x] Create dummy API with docker image
-- [ ] Set up basic project structure
-- [ ] Configure AWS OIDC Identity Provider
-- [ ] Create initial Terraform configuration (with backend store in S3)
+- [x] Set up basic project structure
+- [x] Configure AWS OIDC Identity Provider
+- [x] Create initial Terraform configuration (with backend store in S3)
 
 **Phase 2: Infrastructure Development**
 - [ ] Develop VPC and networking resources
@@ -58,7 +58,7 @@ Internet → Internet Gateway → Public Subnet (ALB) → Private Subnet (ECS Ta
 - [ ] Develop GitHub Actions workflow
 
 **Phase 4: Integration & Testing**
-- [ ] Deploy infrastructure via pipeline
+- [x] Deploy infrastructure via pipeline
 - [ ] Test application deployment
 - [ ] Verify security configurations
 - [ ] Documentation and cleanup
