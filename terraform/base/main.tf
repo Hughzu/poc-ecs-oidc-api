@@ -87,6 +87,14 @@ resource "aws_iam_policy" "github_actions" {
           "s3:PutBucketPolicy",
           "s3:GetBucketAcl",
           "s3:PutBucketAcl",
+          "s3:GetBucketCORS",
+          "s3:PutBucketCORS",
+          "s3:GetBucketWebsite",
+          "s3:PutBucketWebsite",
+          "s3:GetAccelerateConfiguration",
+          "s3:PutAccelerateConfiguration",
+          "s3:GetBucketRequestPayment",
+          "s3:PutBucketRequestPayment"
         ]
         Resource = [
           "arn:aws:s3:::hughze-poc-ecs",
