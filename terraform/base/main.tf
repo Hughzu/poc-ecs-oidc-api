@@ -84,7 +84,9 @@ resource "aws_iam_policy" "github_actions" {
         ]
         Resource = [
           "arn:aws:s3:::hughze-poc-ecs",
-          "arn:aws:s3:::hughze-poc-ecs/*"
+          "arn:aws:s3:::hughze-poc-ecs/*",
+          "arn:aws:s3:::poc-ecs-*",
+          "arn:aws:s3:::poc-ecs-*/*"
         ]
       },
       {
