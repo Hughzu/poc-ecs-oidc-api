@@ -157,17 +157,3 @@ jobs:
           else
             echo "❌ There was an issue with the plan"
           fi
-
-  notify:
-    runs-on: ubuntu-latest
-    needs: terraform
-    if: always()
-    steps:
-      - name: Notify Status
-        run: |
-          if [ "${{ needs.terraform.result }}" == "success" ]; then
-            echo "✅ Infrastructure pipeline completed successfully!"
-          else
-            echo "❌ Infrastructure pipeline failed!"
-            exit 1
-          fi

@@ -80,7 +80,13 @@ resource "aws_iam_policy" "github_actions" {
           "s3:ListBucket",
           "s3:GetBucketVersioning",
           "s3:PutBucketVersioning",
-          "s3:GetBucketLocation"
+          "s3:GetBucketLocation",
+          "s3:GetBucketTagging",
+          "s3:PutBucketTagging",
+          "s3:GetBucketPolicy",
+          "s3:PutBucketPolicy",
+          "s3:GetBucketAcl",
+          "s3:PutBucketAcl",
         ]
         Resource = [
           "arn:aws:s3:::hughze-poc-ecs",
