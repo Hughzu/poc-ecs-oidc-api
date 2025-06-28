@@ -10,7 +10,7 @@ provider "aws" {
 }
 
 resource "aws_s3_bucket" "test_bucket" {
-  bucket = "${var.project_name}-test-bucket-${random_id.bucket_suffix.hex}"
+  bucket = "${var.project_name}-test-bucket-123456"
   
   tags = {
     Name        = "${var.project_name}-test-bucket"
