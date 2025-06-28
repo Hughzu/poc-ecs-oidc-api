@@ -1,0 +1,154 @@
+name: Deploy Infrastructure
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'terraform/**'
+      - '.github/workflows/terraform-infrastructure.yml'
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Terraform action to perform'
+        required: true
+        default: 'plan'
+        type: choice
+        options:
+          - plan
+          - apply
+          - destroy
+
+permissions:
+  id-token: write   # Required for OIDC
+  contents: read    # Required for checkout
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    
+    defaults:
+      run:
+        working-directory: terraform
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ~1.0
+          terraform_wrapper: false
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          role-session-name: GitHubActions-Terraform-${{ github.run_number }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Terraform Format Check
+        id: fmt
+        run: terraform fmt -check -recursive
+        continue-on-error: true
+
+      - name: Terraform Init
+        id: init
+        run: |
+          terraform init
+          echo "✅ Terraform initialized successfully"
+
+      - name: Terraform Validate
+        id: validate
+        run: |
+          terraform validate
+          echo "✅ Terraform configuration is valid"
+
+      - name: Terraform Plan
+        id: plan
+        run: |
+          echo "🔍 Planning infrastructure changes..."
+          terraform plan -detailed-exitcode -no-color -out=tfplan
+          PLAN_EXIT_CODE=$?
+          
+          if [ $PLAN_EXIT_CODE -eq 0 ]; then
+            echo "✅ No changes needed"
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          elif [ $PLAN_EXIT_CODE -eq 2 ]; then
+            echo "📋 Changes detected, will apply automatically"
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          else
+            echo "❌ Plan failed"
+            exit 1
+          fi
+
+      - name: Terraform Apply (Auto on Push to Main)
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push' && steps.plan.outputs.has_changes == 'true'
+        run: |
+          echo "🚀 Auto-applying infrastructure changes..."
+          terraform apply tfplan
+          echo "✅ Infrastructure deployed successfully!"
+
+      - name: Manual Apply
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'apply'
+        run: |
+          echo "🚀 Manually applying Terraform changes..."
+          terraform apply tfplan
+          echo "✅ Infrastructure deployed successfully!"
+
+      - name: Terraform Destroy
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'destroy'
+        run: |
+          echo "🗑️ Destroying infrastructure..."
+          terraform destroy -auto-approve
+          echo "✅ Infrastructure destroyed successfully!"
+
+      - name: Output Infrastructure Details
+        if: |
+          (github.ref == 'refs/heads/main' && github.event_name == 'push' && steps.plan.outputs.has_changes == 'true') ||
+          (github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'apply')
+        run: |
+          echo "📋 Infrastructure Outputs:"
+          terraform output -json > infrastructure-outputs.json
+          cat infrastructure-outputs.json
+          
+          echo "🏗️ Key Infrastructure Components:"
+          echo "- VPC ID: $(terraform output -raw vpc_id 2>/dev/null || echo 'Not available')"
+          echo "- ECS Cluster: $(terraform output -raw ecs_cluster_name 2>/dev/null || echo 'Not available')"
+          echo "- ECR Repository: $(terraform output -raw ecr_repository_url 2>/dev/null || echo 'Not available')"
+          echo "- Load Balancer DNS: $(terraform output -raw alb_dns_name 2>/dev/null || echo 'Not available')"
+
+      - name: Save Infrastructure Outputs
+        if: |
+          (github.ref == 'refs/heads/main' && github.event_name == 'push' && steps.plan.outputs.has_changes == 'true') ||
+          (github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'apply')
+        uses: actions/upload-artifact@v4
+        with:
+          name: infrastructure-outputs-${{ github.run_number }}
+          path: terraform/infrastructure-outputs.json
+          retention-days: 30
+
+      - name: Update GitHub Secrets (if needed)
+        if: |
+          (github.ref == 'refs/heads/main' && github.event_name == 'push' && steps.plan.outputs.has_changes == 'true') ||
+          (github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'apply')
+        run: |
+          echo "📝 To complete setup, add these outputs as GitHub repository secrets:"
+          echo "ECR_REPOSITORY_URI: $(terraform output -raw ecr_repository_url 2>/dev/null || echo 'Add manually')"
+          echo "ECS_CLUSTER_NAME: $(terraform output -raw ecs_cluster_name 2>/dev/null || echo 'Add manually')"
+          echo "ECS_SERVICE_NAME: $(terraform output -raw ecs_service_name 2>/dev/null || echo 'Add manually')"
+          echo "ALB_DNS_NAME: $(terraform output -raw alb_dns_name 2>/dev/null || echo 'Add manually')"
+
+  notify:
+    runs-on: ubuntu-latest
+    needs: terraform
+    if: always()
+    steps:
+      - name: Notify Status
+        run: |
+          if [ "${{ needs.terraform.result }}" == "success" ]; then
+            echo "✅ Infrastructure pipeline completed successfully!"
+          else
+            echo "❌ Infrastructure pipeline failed!"
+            exit 1
+          fi
