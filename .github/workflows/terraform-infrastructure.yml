@@ -68,17 +68,22 @@ jobs:
         id: plan
         run: |
           echo "🔍 Planning infrastructure changes..."
+          set +e  # Don't exit on non-zero exit codes
           terraform plan -detailed-exitcode -no-color -out=tfplan
           PLAN_EXIT_CODE=$?
+          set -e  # Re-enable exit on error
           
           if [ $PLAN_EXIT_CODE -eq 0 ]; then
             echo "✅ No changes needed"
             echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo "plan_result=no-changes" >> $GITHUB_OUTPUT
           elif [ $PLAN_EXIT_CODE -eq 2 ]; then
-            echo "📋 Changes detected, will apply automatically"
+            echo "📋 Changes detected, ready to apply"
             echo "has_changes=true" >> $GITHUB_OUTPUT
+            echo "plan_result=changes-detected" >> $GITHUB_OUTPUT
           else
-            echo "❌ Plan failed"
+            echo "❌ Plan failed with exit code $PLAN_EXIT_CODE"
+            echo "plan_result=failed" >> $GITHUB_OUTPUT
             exit 1
           fi
 
@@ -138,6 +143,20 @@ jobs:
           echo "ECS_CLUSTER_NAME: $(terraform output -raw ecs_cluster_name 2>/dev/null || echo 'Add manually')"
           echo "ECS_SERVICE_NAME: $(terraform output -raw ecs_service_name 2>/dev/null || echo 'Add manually')"
           echo "ALB_DNS_NAME: $(terraform output -raw alb_dns_name 2>/dev/null || echo 'Add manually')"
+          
+      - name: Plan Summary
+        if: always()
+        run: |
+          echo "📊 Terraform Plan Summary:"
+          echo "- Plan Result: ${{ steps.plan.outputs.plan_result }}"
+          echo "- Has Changes: ${{ steps.plan.outputs.has_changes }}"
+          if [ "${{ steps.plan.outputs.plan_result }}" = "changes-detected" ]; then
+            echo "✅ Infrastructure changes are ready to apply"
+          elif [ "${{ steps.plan.outputs.plan_result }}" = "no-changes" ]; then
+            echo "✅ Infrastructure is up to date"
+          else
+            echo "❌ There was an issue with the plan"
+          fi
 
   notify:
     runs-on: ubuntu-latest
