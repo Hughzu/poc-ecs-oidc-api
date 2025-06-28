@@ -73,6 +73,21 @@ resource "aws_iam_policy" "github_actions" {
       {
         Effect = "Allow"
         Action = [
+          "s3:GetObject",
+          "s3:PutObject",
+          "s3:ListBucket",
+          "s3:GetBucketVersioning",
+          "s3:PutBucketVersioning",
+          "s3:GetBucketLocation"
+        ]
+        Resource = [
+          "arn:aws:s3:::hughze-poc-ecs",
+          "arn:aws:s3:::hughze-poc-ecs/*"
+        ]
+      },
+      {
+        Effect = "Allow"
+        Action = [
           # ECR permissions
           "ecr:GetAuthorizationToken",
           "ecr:BatchCheckLayerAvailability",
@@ -82,7 +97,7 @@ resource "aws_iam_policy" "github_actions" {
           "ecr:InitiateLayerUpload",
           "ecr:UploadLayerPart",
           "ecr:CompleteLayerUpload",
-          
+
           # ECS permissions
           "ecs:DescribeServices",
           "ecs:DescribeTaskDefinition",
@@ -90,14 +105,14 @@ resource "aws_iam_policy" "github_actions" {
           "ecs:ListTasks",
           "ecs:RegisterTaskDefinition",
           "ecs:UpdateService",
-          
+
           # CloudWatch Logs
           "logs:CreateLogGroup",
           "logs:CreateLogStream",
           "logs:PutLogEvents",
           "logs:DescribeLogGroups",
           "logs:DescribeLogStreams",
-          
+
           # IAM (for ECS task roles)
           "iam:PassRole"
         ]
