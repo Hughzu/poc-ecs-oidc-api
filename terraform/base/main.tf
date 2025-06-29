@@ -26,6 +26,9 @@ locals {
   ecs_policy = file("${path.module}/policies/ecs-policy.json")
   logs_policy = file("${path.module}/policies/logs-policy.json")
   vpc_policy = file("${path.module}/policies/vpc-policy.json")
+  alb_policy = file("${path.module}/policies/alb-policy.json")
+  autoscaling_policy = file("${path.module}/policies/asg-policy.json")
+  servicediscovery_policy = file("${path.module}/policies/servicediscovery-policy.json")
 }
 
 # OIDC Identity Provider for GitHub Actions
@@ -130,6 +133,24 @@ resource "aws_iam_policy" "github_actions_vpc" {
   }
 }
 
+resource "aws_iam_policy" "github_actions_alb" {
+  name        = "${var.project_name}-github-actions-alb-policy"
+  description = "ALB permissions for GitHub Actions to deploy ${var.project_name}"
+  policy      = local.alb_policy
+}
+
+resource "aws_iam_policy" "github_actions_autoscaling" {
+  name        = "${var.project_name}-github-actions-autoscaling-policy"
+  description = "Auto Scaling permissions for GitHub Actions to deploy ${var.project_name}"
+  policy      = local.autoscaling_policy
+}
+
+resource "aws_iam_policy" "github_actions_servicediscovery" {
+  name        = "${var.project_name}-github-actions-servicediscovery-policy"
+  description = "Service Discovery permissions for GitHub Actions to deploy ${var.project_name}"
+  policy      = local.servicediscovery_policy
+}
+
 # Attach all policies to the role
 resource "aws_iam_role_policy_attachment" "github_actions_s3" {
   role       = aws_iam_role.github_actions.name
@@ -154,6 +175,21 @@ resource "aws_iam_role_policy_attachment" "github_actions_logs" {
 resource "aws_iam_role_policy_attachment" "github_actions_vpc" {
   role       = aws_iam_role.github_actions.name
   policy_arn = aws_iam_policy.github_actions_vpc.arn
+}
+
+resource "aws_iam_role_policy_attachment" "github_actions_alb" {
+  role       = aws_iam_role.github_actions.name
+  policy_arn = aws_iam_policy.github_actions_alb.arn
+}
+
+resource "aws_iam_role_policy_attachment" "github_actions_autoscaling" {
+  role       = aws_iam_role.github_actions.name
+  policy_arn = aws_iam_policy.github_actions_autoscaling.arn
+}
+
+resource "aws_iam_role_policy_attachment" "github_actions_servicediscovery" {
+  role       = aws_iam_role.github_actions.name
+  policy_arn = aws_iam_policy.github_actions_servicediscovery.arn
 }
 
 # Budget

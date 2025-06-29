@@ -2,14 +2,84 @@
   "Version": "2012-10-17",
   "Statement": [
     {
+      "Sid": "ECSClusterManagement",
       "Effect": "Allow",
       "Action": [
+        "ecs:CreateCluster",
+        "ecs:DeleteCluster",
+        "ecs:DescribeClusters",
+        "ecs:ListClusters",
+        "ecs:PutClusterCapacityProviders",
+        "ecs:UpdateCluster",
+        "ecs:UpdateClusterSettings"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "ECSServiceManagement",
+      "Effect": "Allow",
+      "Action": [
+        "ecs:CreateService",
+        "ecs:DeleteService",
         "ecs:DescribeServices",
+        "ecs:ListServices",
+        "ecs:UpdateService",
+        "ecs:UpdateServicePrimaryTaskSet"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "ECSTaskManagement",
+      "Effect": "Allow",
+      "Action": [
+        "ecs:CreateTaskDefinition",
+        "ecs:DeleteTaskDefinition",
         "ecs:DescribeTaskDefinition",
         "ecs:DescribeTasks",
+        "ecs:ListTaskDefinitionFamilies",
+        "ecs:ListTaskDefinitions",
         "ecs:ListTasks",
         "ecs:RegisterTaskDefinition",
-        "ecs:UpdateService"
+        "ecs:DeregisterTaskDefinition",
+        "ecs:RunTask",
+        "ecs:StartTask",
+        "ecs:StopTask"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "ECSContainerInstanceManagement",
+      "Effect": "Allow",
+      "Action": [
+        "ecs:DeregisterContainerInstance",
+        "ecs:DescribeContainerInstances",
+        "ecs:ListContainerInstances",
+        "ecs:RegisterContainerInstance",
+        "ecs:SubmitContainerStateChange",
+        "ecs:SubmitTaskStateChange",
+        "ecs:UpdateContainerAgent",
+        "ecs:UpdateContainerInstancesState"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "ECSTagging",
+      "Effect": "Allow",
+      "Action": [
+        "ecs:TagResource",
+        "ecs:UntagResource",
+        "ecs:ListTagsForResource"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "ECSAttributes",
+      "Effect": "Allow",
+      "Action": [
+        "ecs:DeleteAttributes",
+        "ecs:DescribeCapacityProviders",
+        "ecs:ListAttributes",
+        "ecs:PutAttributes"
       ],
       "Resource": "*"
     }

@@ -8,6 +8,7 @@
         "ec2:CreateVpc",
         "ec2:DeleteVpc",
         "ec2:DescribeVpcs",
+        "ec2:DescribeVpcAttribute",
         "ec2:ModifyVpcAttribute",
         "ec2:AssociateVpcCidrBlock",
         "ec2:DisassociateVpcCidrBlock"
@@ -84,6 +85,7 @@
         "ec2:CreateSecurityGroup",
         "ec2:DeleteSecurityGroup",
         "ec2:DescribeSecurityGroups",
+        "ec2:DescribeSecurityGroupRules",
         "ec2:AuthorizeSecurityGroupIngress",
         "ec2:AuthorizeSecurityGroupEgress",
         "ec2:RevokeSecurityGroupIngress",

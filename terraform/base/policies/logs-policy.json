@@ -2,17 +2,45 @@
   "Version": "2012-10-17",
   "Statement": [
     {
+      "Sid": "CloudWatchLogsManagement",
       "Effect": "Allow",
       "Action": [
         "logs:CreateLogGroup",
         "logs:CreateLogStream",
-        "logs:PutLogEvents",
+        "logs:DeleteLogGroup",
+        "logs:DeleteLogStream",
         "logs:DescribeLogGroups",
-        "logs:DescribeLogStreams"
+        "logs:DescribeLogStreams",
+        "logs:DescribeMetricFilters",
+        "logs:PutLogEvents",
+        "logs:PutRetentionPolicy",
+        "logs:DeleteRetentionPolicy",
+        "logs:TagLogGroup",
+        "logs:UntagLogGroup",
+        "logs:ListTagsLogGroup",
+        "logs:PutMetricFilter",
+        "logs:DeleteMetricFilter"
       ],
       "Resource": "*"
     },
     {
+      "Sid": "CloudWatchMetrics",
+      "Effect": "Allow",
+      "Action": [
+        "cloudwatch:PutMetricData",
+        "cloudwatch:GetMetricStatistics",
+        "cloudwatch:ListMetrics",
+        "cloudwatch:DescribeAlarms",
+        "cloudwatch:PutMetricAlarm",
+        "cloudwatch:DeleteAlarms",
+        "cloudwatch:TagResource",
+        "cloudwatch:UntagResource",
+        "cloudwatch:ListTagsForResource"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "IAMPassRoleForLogs",
       "Effect": "Allow",
       "Action": [
         "iam:PassRole"
@@ -20,7 +48,10 @@
       "Resource": "*",
       "Condition": {
         "StringEquals": {
-          "iam:PassedToService": "ecs-tasks.amazonaws.com"
+          "iam:PassedToService": [
+            "ecs-tasks.amazonaws.com",
+            "logs.amazonaws.com"
+          ]
         }
       }
     }
