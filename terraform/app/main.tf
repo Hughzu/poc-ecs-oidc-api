@@ -10,7 +10,7 @@ provider "aws" {
 }
 
 module "ecr" {
-  source = "./modules/ecr"
+  source = "./modules/ECR"
 
   project_name           = var.project_name
   app_name              = var.app_name
