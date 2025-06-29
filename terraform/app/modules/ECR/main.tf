@@ -22,6 +22,7 @@ resource "aws_ecr_lifecycle_policy" "app" {
         description  = "Keep only last 3 tagged images (cost optimization)"
         selection = {
           tagStatus   = "tagged"
+          tagPatternList = ["*"]
           countType   = "imageCountMoreThan"
           countNumber = 3
         }
