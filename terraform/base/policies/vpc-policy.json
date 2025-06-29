@@ -9,6 +9,7 @@
         "ec2:DeleteVpc",
         "ec2:DescribeVpcs",
         "ec2:DescribeVpcAttribute",
+        "ec2:DescribeAddressesAttribute",
         "ec2:ModifyVpcAttribute",
         "ec2:AssociateVpcCidrBlock",
         "ec2:DisassociateVpcCidrBlock"
@@ -57,6 +58,7 @@
         "ec2:AllocateAddress",
         "ec2:ReleaseAddress",
         "ec2:DescribeAddresses",
+        "ec2:DescribeAddressesAttribute",
         "ec2:AssociateAddress",
         "ec2:DisassociateAddress"
       ],
