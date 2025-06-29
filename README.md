@@ -46,16 +46,17 @@ Internet → Internet Gateway → Public Subnet (ALB) → Private Subnet (ECS Ta
 - [x] Create initial Terraform configuration (with backend store in S3)
 
 **Phase 2: Infrastructure Development**
-- [ ] Develop VPC and networking resources
+- [x] Develop VPC and networking resources
 - [ ] Create ECS cluster and task definitions
 - [ ] Set up Application Load Balancer
+- [ ] Set up Security Groups (https only at least ...)
 - [ ] Configure VPC endpoints
 
 **Phase 3: Application & Pipeline**
 - [x] Create sample API application
 - [x] Build Docker container
-- [ ] Set up ECR repository
-- [ ] Develop GitHub Actions workflow
+- [x] Set up ECR repository
+- [x] Develop GitHub Actions workflow
 
 **Phase 4: Integration & Testing**
 - [x] Deploy infrastructure via pipeline
