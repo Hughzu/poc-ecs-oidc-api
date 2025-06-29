@@ -1,0 +1,96 @@
+name: Build and Push Docker Image
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'app/**'
+      - '.github/workflows/docker-build-push.yml'
+  workflow_dispatch:
+
+permissions:
+  id-token: write   
+  contents: read    
+
+env:
+  AWS_REGION: eu-central-1
+  ECR_REPOSITORY: poc-ecs/api
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          role-session-name: GitHubActions-Docker-${{ github.run_number }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Extract metadata for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./app
+          file: ./app/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Image Details
+        run: |
+          echo "🐳 Docker Image Built and Pushed Successfully!"
+          echo "📋 Image Details:"
+          echo "Repository: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}"
+          echo "Tags: ${{ steps.meta.outputs.tags }}"
+          echo "Image Digest: ${{ steps.build.outputs.digest }}"
+          
+          echo "🏷️ Available Tags:"
+          echo "${{ steps.meta.outputs.tags }}" | tr ',' '\n' | while read tag; do
+            echo "  - $tag"
+          done
+
+      - name: Verify image in ECR
+        run: |
+          echo "🔍 Verifying image was pushed to ECR..."
+          aws ecr describe-images \
+            --repository-name ${{ env.ECR_REPOSITORY }} \
+            --region ${{ env.AWS_REGION }} \
+            --output table \
+            --query 'imageDetails[0:5].[imageTags[0],imagePushedAt,imageSizeInBytes]'
+          echo "✅ Image verification complete!"
+
+      - name: Output image URI
+        id: image-uri
+        run: |
+          IMAGE_URI="${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}"
+          echo "image-uri=$IMAGE_URI" >> $GITHUB_OUTPUT
+          echo "📦 Latest Image URI: $IMAGE_URI"
+
+    outputs:
+      image-uri: ${{ steps.image-uri.outputs.image-uri }}
+      ecr-registry: ${{ steps.login-ecr.outputs.registry }}
+      repository: ${{ env.ECR_REPOSITORY }}
