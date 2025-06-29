@@ -11,7 +11,6 @@ provider "aws" {
 
 data "aws_caller_identity" "current" {}
 
-# Combine all policies
 locals {
   s3_policy = templatefile("${path.module}/policies/s3-policy.json", {
     bucket_name    = "hughze-poc-ecs"
@@ -26,17 +25,7 @@ locals {
   
   ecs_policy = file("${path.module}/policies/ecs-policy.json")
   logs_policy = file("${path.module}/policies/logs-policy.json")
-  
-  # Combine all policies
-  combined_policy = {
-    Version = "2012-10-17"
-    Statement = concat(
-      jsondecode(local.s3_policy).Statement,
-      jsondecode(local.ecr_policy).Statement,
-      jsondecode(local.ecs_policy).Statement,
-      jsondecode(local.logs_policy).Statement
-    )
-  }
+  vpc_policy = file("${path.module}/policies/vpc-policy.json")
 }
 
 # OIDC Identity Provider for GitHub Actions
@@ -90,22 +79,81 @@ resource "aws_iam_role" "github_actions" {
   }
 }
 
-# IAM Policy for GitHub Actions (basic permissions for this project)
-resource "aws_iam_policy" "github_actions" {
-  name        = "${var.project_name}-github-actions-policy"
-  description = "Policy for GitHub Actions to deploy ${var.project_name}"
-
-  policy = jsonencode(local.combined_policy)
+# Separate IAM Policies for each service
+resource "aws_iam_policy" "github_actions_s3" {
+  name        = "${var.project_name}-github-actions-s3-policy"
+  description = "S3 permissions for GitHub Actions to deploy ${var.project_name}"
+  policy      = local.s3_policy
 
   tags = {
-    Name = "${var.project_name}-github-actions-policy"
+    Name = "${var.project_name}-github-actions-s3-policy"
   }
 }
 
-# Attach policy to role
-resource "aws_iam_role_policy_attachment" "github_actions" {
+resource "aws_iam_policy" "github_actions_ecr" {
+  name        = "${var.project_name}-github-actions-ecr-policy"
+  description = "ECR permissions for GitHub Actions to deploy ${var.project_name}"
+  policy      = local.ecr_policy
+
+  tags = {
+    Name = "${var.project_name}-github-actions-ecr-policy"
+  }
+}
+
+resource "aws_iam_policy" "github_actions_ecs" {
+  name        = "${var.project_name}-github-actions-ecs-policy"
+  description = "ECS permissions for GitHub Actions to deploy ${var.project_name}"
+  policy      = local.ecs_policy
+
+  tags = {
+    Name = "${var.project_name}-github-actions-ecs-policy"
+  }
+}
+
+resource "aws_iam_policy" "github_actions_logs" {
+  name        = "${var.project_name}-github-actions-logs-policy"
+  description = "CloudWatch Logs permissions for GitHub Actions to deploy ${var.project_name}"
+  policy      = local.logs_policy
+
+  tags = {
+    Name = "${var.project_name}-github-actions-logs-policy"
+  }
+}
+
+resource "aws_iam_policy" "github_actions_vpc" {
+  name        = "${var.project_name}-github-actions-vpc-policy"
+  description = "Vpc permissions for GitHub Actions to deploy ${var.project_name}"
+  policy      = local.vpc_policy
+
+  tags = {
+    Name = "${var.project_name}-github-actions-vpc-policy"
+  }
+}
+
+# Attach all policies to the role
+resource "aws_iam_role_policy_attachment" "github_actions_s3" {
   role       = aws_iam_role.github_actions.name
-  policy_arn = aws_iam_policy.github_actions.arn
+  policy_arn = aws_iam_policy.github_actions_s3.arn
+}
+
+resource "aws_iam_role_policy_attachment" "github_actions_ecr" {
+  role       = aws_iam_role.github_actions.name
+  policy_arn = aws_iam_policy.github_actions_ecr.arn
+}
+
+resource "aws_iam_role_policy_attachment" "github_actions_ecs" {
+  role       = aws_iam_role.github_actions.name
+  policy_arn = aws_iam_policy.github_actions_ecs.arn
+}
+
+resource "aws_iam_role_policy_attachment" "github_actions_logs" {
+  role       = aws_iam_role.github_actions.name
+  policy_arn = aws_iam_policy.github_actions_logs.arn
+}
+
+resource "aws_iam_role_policy_attachment" "github_actions_vpc" {
+  role       = aws_iam_role.github_actions.name
+  policy_arn = aws_iam_policy.github_actions_vpc.arn
 }
 
 # Budget

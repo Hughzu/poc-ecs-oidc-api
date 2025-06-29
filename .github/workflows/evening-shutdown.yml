@@ -1,0 +1,59 @@
+name: Quick Shutdown (No Confirmation)
+
+on: 
+  schedule:
+    - cron: '0 23 * * 0-6'  # 11 PM weekdays (UTC)
+  workflow_dispatch:  # Manual trigger only
+
+permissions:
+  id-token: write   
+  contents: read    
+
+jobs:
+  quick-destroy:
+    runs-on: ubuntu-latest
+    
+    defaults:
+      run:
+        working-directory: terraform/app
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ~1.0
+          terraform_wrapper: false
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          role-session-name: GitHubActions-QuickShutdown-${{ github.run_number }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Quick shutdown
+        run: |
+          echo "⚡ QUICK SHUTDOWN INITIATED"
+          echo "Operator: ${{ github.actor }}"
+          echo "Time: $(date)"
+          echo ""
+          
+          echo "🔧 Initializing Terraform..."
+          terraform init
+          
+          echo "🔍 Checking for resources..."
+          if terraform state list | grep -q .; then
+            echo "✅ Resources found, proceeding with destruction"
+            echo ""
+            echo "🗑️ Destroying app infrastructure..."
+            terraform destroy -auto-approve
+            echo ""
+            echo "✅ Quick shutdown completed!"
+          else
+            echo "ℹ️ No resources found to destroy"
+          fi
+          
+          echo ""
