@@ -26,6 +26,7 @@
         "autoscaling:DeleteAutoScalingGroup",
         "autoscaling:DescribeAutoScalingGroups",
         "autoscaling:DescribeAutoScalingInstances",
+        "autoscaling:DescribeScalingActivities",
         "autoscaling:UpdateAutoScalingGroup",
         "autoscaling:SetDesiredCapacity",
         "autoscaling:TerminateInstanceInAutoScalingGroup",

@@ -18,6 +18,7 @@
         "logs:TagLogGroup",
         "logs:UntagLogGroup",
         "logs:ListTagsLogGroup",
+        "logs:ListTagsForResource",
         "logs:PutMetricFilter",
         "logs:DeleteMetricFilter"
       ],

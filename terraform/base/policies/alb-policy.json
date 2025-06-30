@@ -39,6 +39,7 @@
         "elasticloadbalancing:DeleteListener",
         "elasticloadbalancing:DescribeListeners",
         "elasticloadbalancing:DescribeListenerCertificates",
+        "elasticloadbalancing:DescribeListenerAttributes",
         "elasticloadbalancing:ModifyListener"
       ],
       "Resource": "*"
