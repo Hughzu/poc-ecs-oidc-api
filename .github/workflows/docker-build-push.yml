@@ -1,4 +1,4 @@
-name: Build and Push Docker Image
+name: Build, Push and Deploy Docker Image
 
 on:
   push:
@@ -15,9 +15,11 @@ permissions:
 env:
   AWS_REGION: eu-central-1
   ECR_REPOSITORY: poc-ecs/api
+  ECS_CLUSTER: poc-ecs-cluster
+  ECS_SERVICE: poc-ecs-api-service
 
 jobs:
-  build-and-push:
+  build-push-deploy:
     runs-on: ubuntu-latest
     
     steps:
@@ -50,6 +52,7 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Build and push Docker image
+        id: build
         uses: docker/build-push-action@v5
         with:
           context: ./app
@@ -83,10 +86,78 @@ jobs:
             --query 'imageDetails[0:5].[imageTags[0],imagePushedAt,imageSizeInBytes]'
           echo "✅ Image verification complete!"
 
-      - name: Output image URI
+      - name: Deploy to ECS
+        run: |
+          echo "🚀 Deploying new image to ECS..."
+          echo "Cluster: ${{ env.ECS_CLUSTER }}"
+          echo "Service: ${{ env.ECS_SERVICE }}"
+          echo "Region: ${{ env.AWS_REGION }}"
+          echo ""
+          
+          # Force new deployment to pull latest image
+          aws ecs update-service \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --service ${{ env.ECS_SERVICE }} \
+            --force-new-deployment \
+            --region ${{ env.AWS_REGION }} \
+            --no-cli-pager
+          
+          echo "✅ Deployment initiated successfully!"
+
+      - name: Wait for deployment to complete
+        run: |
+          echo "⏳ Waiting for deployment to stabilize..."
+          echo "This may take several minutes..."
+          
+          # Wait for service to reach stable state
+          aws ecs wait services-stable \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --services ${{ env.ECS_SERVICE }} \
+            --region ${{ env.AWS_REGION }}
+          
+          echo "✅ Deployment completed successfully!"
+
+      - name: Get deployment status
+        run: |
+          echo "📊 Final Deployment Status:"
+          
+          # Get service details
+          SERVICE_INFO=$(aws ecs describe-services \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --services ${{ env.ECS_SERVICE }} \
+            --region ${{ env.AWS_REGION }} \
+            --query 'services[0]')
+          
+          RUNNING_COUNT=$(echo $SERVICE_INFO | jq -r '.runningCount')
+          DESIRED_COUNT=$(echo $SERVICE_INFO | jq -r '.desiredCount')
+          TASK_DEFINITION=$(echo $SERVICE_INFO | jq -r '.taskDefinition')
+          
+          echo "- Running Tasks: $RUNNING_COUNT/$DESIRED_COUNT"
+          echo "- Task Definition: $TASK_DEFINITION"
+          echo "- Service Status: $(echo $SERVICE_INFO | jq -r '.status')"
+          
+          # Get running tasks
+          echo ""
+          echo "🔍 Running Tasks:"
+          aws ecs list-tasks \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --service-name ${{ env.ECS_SERVICE }} \
+            --region ${{ env.AWS_REGION }} \
+            --query 'taskArns' \
+            --output table
+
+      - name: Output application URL
+        run: |
+          echo "🌐 Application Access:"
+          echo "URL: http://poc-ecs-alb-387124223.eu-central-1.elb.amazonaws.com/"
+          echo ""
+          echo "🎉 Your updated application should now be accessible at the above URL!"
+          echo "💡 Allow a few minutes for the load balancer health checks to pass."
+
+      - name: Output image URI for reference
         id: image-uri
         run: |
-          IMAGE_URI="${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}"
+          IMAGE_URI="${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:latest"
           echo "image-uri=$IMAGE_URI" >> $GITHUB_OUTPUT
           echo "📦 Latest Image URI: $IMAGE_URI"
 
