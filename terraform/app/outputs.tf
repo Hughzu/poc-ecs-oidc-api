@@ -21,27 +21,27 @@ output "ecr_repository_url" {
 }
 
 # ECS Outputs
-output "ecs_cluster_name" {
-  description = "Name of the ECS cluster"
-  value       = module.ecs.cluster_name
-}
+# output "ecs_cluster_name" {
+#   description = "Name of the ECS cluster"
+#   value       = module.ecs.cluster_name
+# }
 
-output "ecs_service_name" {
-  description = "Name of the ECS service"
-  value       = module.ecs.service_name
-}
+# output "ecs_service_name" {
+#   description = "Name of the ECS service"
+#   value       = module.ecs.service_name
+# }
 
-output "alb_dns_name" {
-  description = "DNS name of the load balancer"
-  value       = module.ecs.alb_dns_name
-}
+# output "alb_dns_name" {
+#   description = "DNS name of the load balancer"
+#   value       = module.ecs.alb_dns_name
+# }
 
-output "application_url" {
-  description = "URL to access the application"
-  value       = module.ecs.application_url
-}
+# output "application_url" {
+#   description = "URL to access the application"
+#   value       = module.ecs.application_url
+# }
 
-output "cloudwatch_log_group" {
-  description = "CloudWatch log group for ECS logs"
-  value       = module.ecs.cloudwatch_log_group_name
-}
+# output "cloudwatch_log_group" {
+#   description = "CloudWatch log group for ECS logs"
+#   value       = module.ecs.cloudwatch_log_group_name
+# }
