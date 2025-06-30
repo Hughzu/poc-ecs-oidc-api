@@ -69,22 +69,22 @@ output "application_url" {
 }
 
 # EC2-specific outputs
-output "autoscaling_group_name" {
-  description = "Name of the Auto Scaling Group"
-  value       = aws_autoscaling_group.ecs_asg.name
-}
+# output "autoscaling_group_name" {
+#   description = "Name of the Auto Scaling Group"
+#   value       = aws_autoscaling_group.ecs_asg.name
+# }
 
-output "launch_template_id" {
-  description = "ID of the launch template"
-  value       = aws_launch_template.ecs_instance.id
-}
+# output "launch_template_id" {
+#   description = "ID of the launch template"
+#   value       = aws_launch_template.ecs_instance.id
+# }
 
-output "capacity_provider_name" {
-  description = "Name of the ECS capacity provider"
-  value       = aws_ecs_capacity_provider.main.name
-}
+# output "capacity_provider_name" {
+#   description = "Name of the ECS capacity provider"
+#   value       = aws_ecs_capacity_provider.main.name
+# }
 
-output "ecs_instance_security_group_id" {
-  description = "ID of the ECS instances security group"
-  value       = aws_security_group.ecs_instances.id
-}
+# output "ecs_instance_security_group_id" {
+#   description = "ID of the ECS instances security group"
+#   value       = aws_security_group.ecs_instances.id
+# }
