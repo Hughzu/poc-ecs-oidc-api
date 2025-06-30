@@ -58,7 +58,7 @@ resource "aws_security_group" "ecs_instances" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["10.0.0.0/16"]  # Only from within VPC
+    cidr_blocks = ["10.0.0.0/16"] # Only from within VPC
   }
 
   egress {
@@ -84,12 +84,21 @@ resource "aws_security_group" "alb" {
   vpc_id      = var.vpc_id
 
   ingress {
-    description = "HTTPS"
-    from_port   = 443
-    to_port     = 443
+    description = "HTTP"
+    from_port   = 80
+    to_port     = 80
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
+
+  # TODO
+  # ingress {
+  #   description = "HTTPS"
+  #   from_port   = 443
+  #   to_port     = 443
+  #   protocol    = "tcp"
+  #   cidr_blocks = ["0.0.0.0/0"]
+  # }
 
   egress {
     description = "All outbound traffic"
@@ -183,10 +192,10 @@ resource "aws_launch_template" "ecs_instance" {
 
 # Auto Scaling Group for ECS instances
 resource "aws_autoscaling_group" "ecs_asg" {
-  name                = "${var.project_name}-ecs-asg"
-  vpc_zone_identifier = var.private_subnet_ids
-  target_group_arns   = [aws_lb_target_group.app.arn]
-  health_check_type   = "ELB"
+  name                      = "${var.project_name}-ecs-asg"
+  vpc_zone_identifier       = var.private_subnet_ids
+  target_group_arns         = [aws_lb_target_group.app.arn]
+  health_check_type         = "ELB"
   health_check_grace_period = 300
 
   min_size         = var.min_capacity
@@ -215,7 +224,7 @@ resource "aws_autoscaling_group" "ecs_asg" {
 
   lifecycle {
     create_before_destroy = true
-    ignore_changes = [desired_capacity]
+    ignore_changes        = [desired_capacity]
   }
 }
 
@@ -225,11 +234,11 @@ resource "aws_ecs_capacity_provider" "main" {
 
   auto_scaling_group_provider {
     auto_scaling_group_arn         = aws_autoscaling_group.ecs_asg.arn
-    managed_termination_protection = "DISABLED"  # Cost optimization
+    managed_termination_protection = "DISABLED" # Cost optimization
 
     managed_scaling {
-      status          = "ENABLED"
-      target_capacity = 100
+      status                    = "ENABLED"
+      target_capacity           = 100
       minimum_scaling_step_size = 1
       maximum_scaling_step_size = 2
     }
@@ -273,7 +282,7 @@ resource "aws_lb_target_group" "app" {
   port        = var.container_port
   protocol    = "HTTP"
   vpc_id      = var.vpc_id
-  target_type = "instance" 
+  target_type = "instance"
 
   health_check {
     enabled             = true
@@ -339,17 +348,17 @@ resource "aws_iam_role_policy_attachment" "ecs_task_execution_role_policy" {
 resource "aws_ecs_task_definition" "app" {
   family                   = "${var.project_name}-${var.app_name}"
   network_mode             = "bridge"
-  requires_compatibilities = ["EC2"]  
+  requires_compatibilities = ["EC2"]
   execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
 
   container_definitions = jsonencode([
     {
       name  = var.app_name
       image = "${var.ecr_repository_url}:latest"
-      
+
       cpu    = var.cpu
       memory = var.memory
-      
+
       portMappings = [
         {
           containerPort = var.container_port
