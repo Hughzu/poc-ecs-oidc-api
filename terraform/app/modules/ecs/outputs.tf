@@ -49,8 +49,8 @@ output "target_group_arn" {
 }
 
 output "ecs_security_group_id" {
-  description = "ID of the ECS tasks security group"
-  value       = aws_security_group.ecs_tasks.id
+  description = "ID of the ECS instances security group"
+  value       = aws_security_group.ecs_instances.id
 }
 
 output "alb_security_group_id" {
