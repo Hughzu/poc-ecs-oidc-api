@@ -19,7 +19,8 @@
         "iam:ListRolePolicies",
         "iam:AttachRolePolicy",
         "iam:DetachRolePolicy",
-        "iam:ListAttachedRolePolicies"
+        "iam:ListAttachedRolePolicies",
+        "iam:ListInstanceProfilesForRole"
       ],
       "Resource": "*"
     },
