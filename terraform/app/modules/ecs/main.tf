@@ -23,6 +23,16 @@ resource "aws_ecs_cluster" "main" {
   }
 }
 
+# ECS Service-Linked Role (required for capacity providers)
+resource "aws_iam_service_linked_role" "ecs" {
+  aws_service_name = "ecs.amazonaws.com"
+  description      = "Service-linked role for ECS"
+
+  lifecycle {
+    ignore_changes = [aws_service_name]
+  }
+}
+
 data "aws_region" "current" {}
 
 data "aws_ami" "ecs_optimized" {
@@ -91,14 +101,13 @@ resource "aws_security_group" "alb" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  # TODO
-  # ingress {
-  #   description = "HTTPS"
-  #   from_port   = 443
-  #   to_port     = 443
-  #   protocol    = "tcp"
-  #   cidr_blocks = ["0.0.0.0/0"]
-  # }
+  ingress {
+    description = "HTTPS"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 
   egress {
     description = "All outbound traffic"
@@ -247,6 +256,9 @@ resource "aws_ecs_capacity_provider" "main" {
   tags = {
     Name = "${var.project_name}-capacity-provider"
   }
+
+  # Ensure service-linked role exists before creating capacity provider
+  depends_on = [aws_iam_service_linked_role.ecs]
 }
 
 resource "aws_ecs_cluster_capacity_providers" "main" {
@@ -401,7 +413,6 @@ resource "aws_ecs_service" "app" {
   desired_count   = var.desired_count
   launch_type     = "EC2"
 
-
   load_balancer {
     target_group_arn = aws_lb_target_group.app.arn
     container_name   = var.app_name
@@ -410,7 +421,8 @@ resource "aws_ecs_service" "app" {
 
   depends_on = [
     aws_lb_listener.app,
-    aws_autoscaling_group.ecs_asg
+    aws_autoscaling_group.ecs_asg,
+    aws_iam_service_linked_role.ecs
   ]
 
   tags = {
