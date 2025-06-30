@@ -60,6 +60,16 @@
       "Resource": "*"
     },
     {
+      "Sid": "ServiceLinkedRoleManagement",
+      "Effect": "Allow",
+      "Action": [
+        "iam:CreateServiceLinkedRole",
+        "iam:DeleteServiceLinkedRole",
+        "iam:GetServiceLinkedRoleDeletionStatus"
+      ],
+      "Resource": "*"
+    },
+    {
       "Sid": "PassRoleForECS",
       "Effect": "Allow",
       "Action": [
