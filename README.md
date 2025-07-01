@@ -47,10 +47,10 @@ Internet → Internet Gateway → Public Subnet (ALB) → Private Subnet (ECS Ta
 
 **Phase 2: Infrastructure Development**
 - [x] Develop VPC and networking resources
-- [ ] Create ECS cluster and task definitions
-- [ ] Set up Application Load Balancer
-- [ ] Set up Security Groups (https only at least ...)
-- [ ] Configure VPC endpoints
+- [x] Create ECS cluster and task definitions
+- [x] Set up Application Load Balancer
+- [ ] Set up Security Groups 
+- [x] Configure VPC endpoints
 
 **Phase 3: Application & Pipeline**
 - [x] Create sample API application
@@ -60,35 +60,9 @@ Internet → Internet Gateway → Public Subnet (ALB) → Private Subnet (ECS Ta
 
 **Phase 4: Integration & Testing**
 - [x] Deploy infrastructure via pipeline
-- [ ] Test application deployment
-- [ ] Verify security configurations
+- [x] Test application deployment
+- [x] Verify security configurations
 - [ ] Documentation and cleanup
-
-## 🗂️ Project Structure
-
-```
-aws-ecs-project/
-├── .github/
-│   └── workflows/
-│       ├── terraform-plan.yml
-│       └── terraform-apply.yml
-├── terraform/
-│   ├── main.tf
-│   ├── variables.tf
-│   ├── outputs.tf
-│   ├── versions.tf
-│   └── modules/
-│       ├── networking/
-│       ├── ecs/
-│       └── security/
-├── app/
-│   ├── Dockerfile
-│   ├── app.py 
-│   └── requirements.txt
-├── scripts/
-│   └── setup-oidc.sh
-└── README.md
-```
 
 ## ✅ Success Criteria
 
