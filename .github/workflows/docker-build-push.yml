@@ -15,8 +15,6 @@ permissions:
 env:
   AWS_REGION: eu-central-1
   ECR_REPOSITORY: poc-ecs/api
-  PROJECT_NAME: poc-ecs
-  APP_NAME: api
 
 jobs:
   build-and-push:
@@ -91,13 +89,6 @@ jobs:
           IMAGE_URI="${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}"
           echo "image-uri=$IMAGE_URI" >> $GITHUB_OUTPUT
           echo "📦 Latest Image URI: $IMAGE_URI"
-
-      - name: Update ECS Service
-        run: |
-          aws ecs update-service \
-            --cluster "${{ env.PROJECT_NAME }}-cluster" \
-            --service "${{ env.PROJECT_NAME }}-${{ env.APP_NAME }}-service" \
-            --force-new-deployment
 
     outputs:
       image-uri: ${{ steps.image-uri.outputs.image-uri }}
