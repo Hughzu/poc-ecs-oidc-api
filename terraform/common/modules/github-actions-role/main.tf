@@ -1,28 +1,12 @@
-provider "aws" {
-  region = var.aws_region
-
-  default_tags {
-    tags = {
-      Project   = var.project_name
-      ManagedBy = "terraform"
-    }
-  }
-}
-
 data "aws_caller_identity" "current" {}
 
 locals {
-  s3_policy = templatefile("${path.module}/policies/s3-policy.json", {
-    bucket_name    = "hughze-poc-ecs"
-    project_name   = var.project_name
-  })
-  
+  s3_policy = file("${path.module}/policies/s3-policy.json")
   ecr_policy = templatefile("${path.module}/policies/ecr-policy.json", {
     aws_region     = var.aws_region
     aws_account_id = data.aws_caller_identity.current.account_id
     project_name   = var.project_name
   })
-  
   ecs_policy = file("${path.module}/policies/ecs-policy.json")
   logs_policy = file("${path.module}/policies/logs-policy.json")
   vpc_policy = file("${path.module}/policies/vpc-policy.json")
@@ -33,25 +17,6 @@ locals {
   ec2_policy = file("${path.module}/policies/ec2-policy.json")
 }
 
-# OIDC Identity Provider for GitHub Actions
-resource "aws_iam_openid_connect_provider" "github" {
-  url = "https://token.actions.githubusercontent.com"
-
-  client_id_list = [
-    "sts.amazonaws.com",
-  ]
-
-  thumbprint_list = [
-    "6938fd4d98bab03faadb97b34396831e3780aea1",
-    "1c58a3a8518e8759bf075b76b750d4f2df264fcd"
-  ]
-
-  tags = {
-    Name = "${var.project_name}-github-oidc"
-  }
-}
-
-# IAM Role for GitHub Actions
 resource "aws_iam_role" "github_actions" {
   name = "${var.project_name}-github-actions-role"
 
@@ -61,7 +26,7 @@ resource "aws_iam_role" "github_actions" {
       {
         Effect = "Allow"
         Principal = {
-          Federated = aws_iam_openid_connect_provider.github.arn
+          Federated = var.oidc_provider_arn
         }
         Action = "sts:AssumeRoleWithWebIdentity"
         Condition = {
@@ -165,7 +130,6 @@ resource "aws_iam_policy" "github_actions_ec2" {
   policy      = local.ec2_policy
 }
 
-
 # Attach all policies to the role
 resource "aws_iam_role_policy_attachment" "github_actions_s3" {
   role       = aws_iam_role.github_actions.name
@@ -215,48 +179,4 @@ resource "aws_iam_role_policy_attachment" "github_actions_iam" {
 resource "aws_iam_role_policy_attachment" "github_actions_ec2" {
   role       = aws_iam_role.github_actions.name
   policy_arn = aws_iam_policy.github_actions_ec2.arn
-}
-
-# Budget
-resource "aws_budgets_budget" "monthly_cost_budget" {
-  name = "${var.project_name}-monthly-budget"
-
-  budget_type  = "COST"
-  limit_amount = var.monthly_budget_limit
-  limit_unit   = "USD"
-  time_unit    = "MONTHLY"
-
-  time_period_start = "2025-01-01_00:00"
-  time_period_end   = "2030-06-15_00:00" 
-
-  # 80% threshold alert
-  notification {
-    comparison_operator        = "GREATER_THAN"
-    threshold                  = 80
-    threshold_type             = "PERCENTAGE"
-    notification_type          = "ACTUAL"
-    subscriber_email_addresses = [var.alert_email]
-  }
-
-  # 100% threshold alert
-  notification {
-    comparison_operator        = "GREATER_THAN"
-    threshold                  = 100
-    threshold_type             = "PERCENTAGE"
-    notification_type          = "ACTUAL"
-    subscriber_email_addresses = [var.alert_email]
-  }
-
-  # Forecasted 100% alert
-  notification {
-    comparison_operator        = "GREATER_THAN"
-    threshold                  = 100
-    threshold_type             = "PERCENTAGE"
-    notification_type          = "FORECASTED"
-    subscriber_email_addresses = [var.alert_email]
-  }
-
-  tags = {
-    Name = "${var.project_name}-monthly-budget"
-  }
 }
