@@ -8,7 +8,6 @@ resource "aws_vpc" "main" {
   }
 }
 
-# Internet Gateway
 resource "aws_internet_gateway" "main" {
   vpc_id = aws_vpc.main.id
 
@@ -21,7 +20,6 @@ data "aws_availability_zones" "available" {
   state = "available"
 }
 
-# Public Subnets - for ALB 
 resource "aws_subnet" "public" {
   count = 2 # Minimum for ALB across AZs
 
@@ -36,7 +34,6 @@ resource "aws_subnet" "public" {
   }
 }
 
-# Private Subnets - for ECS tasks
 resource "aws_subnet" "private" {
   count = 2 # Same AZs as public for ALB target registration
 
@@ -47,6 +44,29 @@ resource "aws_subnet" "private" {
   tags = {
     Name = "${var.project_name}-private-subnet-${count.index + 1}"
     Type = "Private"
+  }
+}
+
+# NAT Gateway - Main resource for private subnet internet access
+# COST OPTIMIZATION: Single NAT Gateway instead of one per AZ
+resource "aws_nat_gateway" "main" {
+  allocation_id = aws_eip.nat.id
+  subnet_id     = aws_subnet.public[0].id # Only in first public subnet
+
+  tags = {
+    Name = "${var.project_name}-nat-gateway"
+  }
+
+  depends_on = [aws_internet_gateway.main]
+}
+
+resource "aws_eip" "nat" {
+  domain = "vpc"
+  
+  depends_on = [aws_internet_gateway.main]
+  
+  tags = {
+    Name = "${var.project_name}-nat-eip"
   }
 }
 
@@ -69,28 +89,6 @@ resource "aws_route_table_association" "public" {
 
   subnet_id      = aws_subnet.public[count.index].id
   route_table_id = aws_route_table.public.id
-}
-
-# COST OPTIMIZATION: Single NAT Gateway instead of one per AZ
-resource "aws_eip" "nat" {
-  domain = "vpc"
-  
-  depends_on = [aws_internet_gateway.main]
-  
-  tags = {
-    Name = "${var.project_name}-nat-eip"
-  }
-}
-
-resource "aws_nat_gateway" "main" {
-  allocation_id = aws_eip.nat.id
-  subnet_id     = aws_subnet.public[0].id # Only in first public subnet
-
-  tags = {
-    Name = "${var.project_name}-nat-gateway"
-  }
-
-  depends_on = [aws_internet_gateway.main]
 }
 
 # Route Table for Private Subnets
