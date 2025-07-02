@@ -1,8 +1,8 @@
 name: Quick Shutdown (No Confirmation)
 
 on: 
-  schedule:
-    - cron: '0 23 * * 0-6'  # 11 PM weekdays (UTC)
+  # schedule:
+  #   - cron: '0 23 * * 0-6'  # 11 PM weekdays (UTC)
   workflow_dispatch:  # Manual trigger only
 
 permissions:
