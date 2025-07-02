@@ -20,14 +20,16 @@ module "vpc" {
 module "ecr" {
   source = "./modules/ECR"
 
-  project_name           = var.project_name
-  app_name              = var.app_name
+  project_name = var.project_name
+  app_name     = var.app_name
+  scan_on_push = false // should be true but I am a cheap ass
+  force_delete = true
 }
 
 module "ecs" {
   source = "./modules/ecs"
 
-  project_name        = var.project_name
+  project_name       = var.project_name
   app_name           = var.app_name
   vpc_id             = module.vpc.vpc_id
   private_subnet_ids = module.vpc.private_subnet_ids
@@ -35,14 +37,14 @@ module "ecs" {
   ecr_repository_url = module.ecr.repository_url
 
   # Cost optimization settings
-  desired_count     = 1
-  cpu              = 256
-  memory           = 512
+  desired_count      = 1
+  cpu                = 256
+  memory             = 512
   enable_autoscaling = false
   log_retention_days = 7
 
   # EC2-specific settings
-  instance_type    = "t3.micro"  # Cost optimization
+  instance_type    = "t3.micro" # Cost optimization
   min_capacity     = 1
   max_capacity     = 2
   desired_capacity = 1
